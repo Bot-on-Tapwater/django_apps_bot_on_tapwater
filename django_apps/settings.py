@@ -35,7 +35,8 @@ DEBUG = True
 # DEBUG = False
 
 
-ALLOWED_HOSTS = ["0.0.0.0", "exceed.botontapwater.tech", "exceed-shop.netlify.app"]
+# ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "exceed.botontapwater.tech", "exceed-shop.netlify.app"]
+ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "exceed.botontapwater.tech", "shop.stanceray.com"]
 # ALLOWED_HOSTS = ["*"]
 
 
@@ -73,6 +74,7 @@ MIDDLEWARE = [
 # ADDED THIS
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
+    'https://shop.stanceray.com',
     'https://exceed-shop.netlify.app',
     'http://127.0.0.1:3000',
     'http://localhost:3000'
