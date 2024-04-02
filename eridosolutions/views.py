@@ -538,10 +538,16 @@ def get_list_of_all_product_categories(request):
         return JsonResponse(None, safe=False)
     
 @require_http_methods(["GET"])
-def get_list_of_all_products_in_category(request, id):
+def get_list_of_all_products_in_category(request, name):
+    try:
+        category = Category.objects.get(name=name)
+    except Category.DoesNotExist:
+        return JsonResponse({"error": "Category not found"}, status=404)
+
     view_url = request.build_absolute_uri()
 
-    return JsonResponse(paginate_results(request, [product for product in Product.objects.filter(category=id)], view_url), safe=False)
+    return JsonResponse(paginate_results(request, [product for product in Product.objects.filter(category=category)], view_url), safe=False)
+    # return JsonResponse(paginate_results(request, [product for product in Product.objects.filter(category=name)], view_url), safe=False)
 
 @require_http_methods(["POST"])
 @csrf_exempt # !!!SECURITY RISK!!! COMMENT OUT CODE
