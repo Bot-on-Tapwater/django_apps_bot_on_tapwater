@@ -37,6 +37,7 @@ urlpatterns = [
     path('users/cart/', views.get_contents_of_shopping_cart_of_user, name='get-cart-contents'),
     # path('users/<int:id>/cart/', views.get_contents_of_shopping_cart_of_user, name='get-cart-contents'),
     path('users/cart/add/<int:productId>/', views.add_product_to_user_cart, name='add-product-to-cart'),
+    path('users/cart/update/<int:productId>/', views.update_product_in_user_cart, name='update-product-in-cart'),
     # path('users/<int:id>/cart/add/<int:productId>/', views.add_product_to_user_cart, name='add-product-to-cart'),
     # path('users/<int:id>/cart/remove/<int:productId>/', views.remove_product_from_user_cart, name='remove-product-from-cart'),
     path('users/cart/remove/<int:productId>/', views.remove_product_from_user_cart, name='remove-product-from-cart'),
