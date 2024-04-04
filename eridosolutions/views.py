@@ -324,13 +324,31 @@ def get_contents_of_shopping_cart_of_user(request):
     try:
         cart_contents_of_user = ShoppingCart.objects.get(user=id)
 
-        return JsonResponse(paginate_results(request, [item for item in CartItem.objects.filter(cart=cart_contents_of_user.cart_id)], view_url), safe=False)
+        cart =paginate_results(request, [item for item in CartItem.objects.filter(cart=cart_contents_of_user.cart_id)], view_url)
+
+        # dict to hold user's cart summary
+        cart_summary = {
+            "totalItems": 0,
+            "itemsSubtotal": 0,
+            "shippingFee": 0,
+            "estimatedTax": 0,
+            "orderTotal": 0
+        }
+        # populating the cart_summary dict
+        for item in cart.get("query_results"):
+            cart_summary["totalItems"] += item["quantity"]
+            cart_summary["itemsSubtotal"] += item["subtotal"]
+        cart_summary["orderTotal"] += cart_summary["itemsSubtotal"] + cart_summary["estimatedTax"] + cart_summary["shippingFee"]
+        cart["cart_summary"] = cart_summary # add cart_summary to the returned json
+        return JsonResponse(cart, safe=False)
+        # return JsonResponse(paginate_results(request, [item for item in CartItem.objects.filter(cart=cart_contents_of_user.cart_id)], view_url), safe=False)
 
     except ShoppingCart.DoesNotExist:
         return JsonResponse(None, safe=False)
     
     except TypeError:
         return JsonResponse(None, safe=False)
+
 
 @require_http_methods(["POST"])
 @csrf_exempt # !!!SECURITY RISK!!! COMMENT OUT CODE
@@ -381,6 +399,37 @@ def add_product_to_user_cart(request, productId):
     new_cart_item.save()    
 
     return JsonResponse({"success": True}, safe=False)
+
+
+"""UPDATE USER CART WITH NEW PRODUCT QUANTITY"""
+@require_http_methods(["POST"])
+@csrf_exempt # !!!SECURITY RISK!!! COMMENT OUT CODE
+@check_user_id
+def update_product_in_user_cart(request, productId):
+    try:
+        user_id = request.user.id
+
+        if not user_id: # user not authenticated
+            return JsonResponse("Unauthorized", status=401)
+
+        quantity = request.POST['new_product_quantity']
+
+        product = get_object_or_404(Product, product_id=productId)
+
+        if int(quantity) > product.quantity_in_stock:
+            return JsonResponse(f"Quantity in stock is {product.quantity_in_stock}. Please reduce the quantity.", safe=False)
+
+        cart_item, created = CartItem.objects.get_or_create(cart__user_id=user_id, product_id=productId)
+
+        if not created:
+            cart_item.quantity = int(quantity)
+            cart_item.save()
+
+        return JsonResponse({"success": True}, safe=False)
+    
+    except MultiValueDictKeyError as e:
+        return JsonResponse({"error": f"The form value for attribute {str(e)} is missing"}, status=400)
+
 
 @require_http_methods(["DELETE"])
 @csrf_exempt # !!!SECURITY RISK!!! COMMENT OUT CODE
